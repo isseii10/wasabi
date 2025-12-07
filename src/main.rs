@@ -26,7 +26,7 @@ struct EfiGuid {
     pub data3: [u8; 8],
 }
 
-const EFI_GRAPHICS_OUTPUT_PROTOCOL_GRID: EfiGuid = EfiGuid {
+const EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID: EfiGuid = EfiGuid {
     data0: 0x9042a9de,
     data1: 0x23dc,
     data2: 0x4a38,
@@ -190,7 +190,7 @@ fn locate_graphic_protocol<'a>(
 ) -> Result<&'a EfiGraphicsOutputProtocol<'a>> {
     let mut graphic_output_protocol = null_mut::<EfiGraphicsOutputProtocol>();
     let status = (efi_system_table.boot_services.locate_protocol)(
-        &EFI_GRAPHICS_OUTPUT_PROTOCOL_GRID,
+        &EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID,
         null_mut::<EfiVoid>(),
         &mut graphic_output_protocol as *mut *mut EfiGraphicsOutputProtocol as *mut *mut EfiVoid,
     );
