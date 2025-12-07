@@ -147,37 +147,66 @@ typedef struct {
   // Memory Services
   EFI_ALLOCATE_PAGES              AllocatePages;       // +40  (8バイト)
   EFI_FREE_PAGES                  FreePages;           // +48  (8バイト)
-  EFI_GET_MEMORY_MAP              GetMemoryMap;        // +56  (8バイト)
+  EFI_GET_MEMORY_MAP              GetMemoryMap;        // +56  (8バイト) ← 使用
   EFI_ALLOCATE_POOL               AllocatePool;        // +64  (8バイト)
   EFI_FREE_POOL                   FreePool;            // +72  (8バイト)
 
   // Event & Timer Services
   EFI_CREATE_EVENT                CreateEvent;         // +80  (8バイト)
-  // ... (他にも多数)
+  // ... (他にも多数の関数)
+
+  // Boot Services
+  EFI_EXIT_BOOT_SERVICES          ExitBootServices;    // +232 (8バイト) ← 使用
 
   // Protocol Handler Services
-  // ... (約30個の関数)
+  // ... (さらに関数が続く)
 
-  EFI_LOCATE_PROTOCOL             LocateProtocol;      // +320 (40番目)
+  EFI_LOCATE_PROTOCOL             LocateProtocol;      // +320 (8バイト) ← 使用
 } EFI_BOOT_SERVICES;
 ```
 
-**重要**: `LocateProtocol` は **320バイト目** に配置されています。
+**重要**: wasabiで使用する3つの関数のオフセット：
+- `GetMemoryMap`: **56バイト目**
+- `ExitBootServices`: **232バイト目**
+- `LocateProtocol`: **320バイト目**
 
 ### 3.3 Rustでの実装
+
+wasabiで使用する3つの関数を含む完全な定義：
 
 ```rust
 #[repr(C)]
 struct EfiBootServicesTable {
-    _reserved0: [u64; 40],  // 最初の320バイトをスキップ (40 × 8 = 320)
+    _reserved0: [u64; 7],              // 56バイトまでスキップ
+    get_memory_map: extern "win64" fn(
+        memory_map_size: *mut usize,
+        memory_map: *mut u8,
+        map_key: *mut usize,
+        descriptor_size: *mut usize,
+        descriptor_version: *mut u32,
+    ) -> EfiStatus,                    // +56
+    _reserved1: [u64; 21],             // 232バイトまでスキップ
+    exit_boot_services: extern "win64" fn(
+        image_handle: EfiHandle,
+        map_key: usize,
+    ) -> EfiStatus,                    // +232
+    _reserved4: [u64; 10],             // 320バイトまでスキップ
     locate_protocol: extern "win64" fn(
         protocol: *const EfiGuid,
         registration: *const EfiVoid,
         interface: *mut *mut EfiVoid,
-    ) -> EfiStatus,
+    ) -> EfiStatus,                    // +320
 }
+
+const _: () = assert!(offset_of!(EfiBootServicesTable, get_memory_map) == 56);
+const _: () = assert!(offset_of!(EfiBootServicesTable, exit_boot_services) == 232);
 const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
 ```
+
+**各関数の用途：**
+- `get_memory_map` (+56): メモリマップの取得
+- `exit_boot_services` (+232): ブートサービスの終了
+- `locate_protocol` (+320): プロトコルの検索
 
 ### 3.4 関数ポインタの仕組み
 
@@ -250,27 +279,6 @@ struct EfiSystemTable {
 // 結果:
 //   正しい位置の BootServices ポインタを読む ✅
 ```
-
-### 4.4 2段階のポインタアクセス
-
-```
-[System Table at 0x8000_0000]
-    +96バイト
-    ↓
-boot_services (ポインタ) → 値: 0x9000_0000
-                              ↓
-            [Boot Services Table at 0x9000_0000]
-                +320バイト
-                ↓
-            locate_protocol (関数ポインタ) → 値: 0x0FFF_5678
-                                              ↓
-                            [関数コード at 0x0FFF_5678]
-```
-
-**アクセスの流れ:**
-1. `system_table.boot_services` → System Tableの96バイト目を読む → `0x9000_0000` を取得
-2. `boot_services.locate_protocol` → Boot Services Tableの320バイト目を読む → `0x0FFF_5678` を取得
-3. 関数呼び出し → `0x0FFF_5678` のコードを実行
 
 ---
 
@@ -436,25 +444,11 @@ struct EfiGraphicsOutputProtocolMode<'a> {
 
 ```rust
 fn efi_main(_image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
-    // GOP取得
-    let gop = locate_graphic_protocol(efi_system_table).unwrap();
+    // GOP取得とVRAM初期化
+    let mut vram = init_vram(efi_system_table).unwrap();
 
-    // VRAM情報を取得
-    let vram_addr = gop.mode.frame_buffer_base;
-    let vram_size = gop.mode.frame_buffer_size;
-
-    // VRAMをスライスとして扱う
-    let vram = unsafe {
-        slice::from_raw_parts_mut(
-            vram_addr as *mut u32,
-            vram_size / size_of::<u32>()
-        )
-    };
-
-    // 画面を白で塗りつぶす
-    for pixel in vram {
-        *pixel = 0xFFFFFF;
-    }
+    // 画面を黒で塗りつぶす
+    fill_rect(&mut vram, 0x000000, 0, 0, vram.width, vram.height).unwrap();
 }
 ```
 
@@ -500,47 +494,575 @@ Ok(unsafe { &*graphic_output_protocol })
 
 ---
 
-## まとめ
+## 8. VRAMへの直接アクセスとグラフィック描画
 
-### UEFIからGOPを取得するまでの流れ
+### 8.1 フレームバッファの概念
+
+Graphics Output Protocol (GOP) から取得できる最も重要な情報は、**フレームバッファ（VRAM）のアドレス**です。
+
+```rust
+#[repr(C)]
+struct EfiGraphicsOutputProtocolMode<'a> {
+    pub max_mode: u32,
+    pub mode: u32,
+    pub info: &'a EfiGraphicsOutputProtocolPixelInfo,
+    pub size_of_info: u64,
+    pub frame_buffer_base: usize,    // ← VRAMの物理アドレス
+    pub frame_buffer_size: usize,    // ← VRAMのサイズ（バイト）
+}
+```
+
+**フレームバッファとは:**
+- 画面に表示される各ピクセルの色情報を格納するメモリ領域
+- このメモリに書き込むと、そのまま画面に反映される
+- OSがない環境でも、このメモリに直接書き込むだけで画面描画が可能
+
+### 8.2 ピクセルフォーマット
+
+UEFIのGOPは通常、**32ビット/ピクセル** (4バイト) のBGRX形式を使用します：
+
+```
+1ピクセル = 4バイト (32ビット)
+┌─────────┬─────────┬─────────┬─────────┐
+│  Blue   │  Green  │   Red   │ Reserved│
+│ (8bit)  │ (8bit)  │ (8bit)  │ (8bit)  │
+└─────────┴─────────┴─────────┴─────────┘
+
+例: 白色 = 0xFFFFFF = 0x00FFFFFF (Reserved=0x00)
+例: 赤色 = 0xFF0000
+例: 緑色 = 0x00FF00
+例: 青色 = 0x0000FF
+```
+
+### 8.3 VRAMバッファの抽象化
+
+wasabiでは、VRAMを扱いやすくするため `Bitmap` トレイトを定義しています：
+
+```rust
+trait Bitmap {
+    fn bytes_per_pixel(&self) -> i64;      // 1ピクセルのバイト数（通常4）
+    fn pixels_per_line(&self) -> i64;      // 1行のピクセル数
+    fn width(&self) -> i64;                 // 画面幅（ピクセル）
+    fn height(&self) -> i64;                // 画面高さ（ピクセル）
+    fn buf_mut(&mut self) -> *mut u8;      // VRAMバッファへのポインタ
+
+    // ピクセルへのアクセス
+    unsafe fn unchecked_pixel_at_mut(&mut self, x: i64, y: i64) -> *mut u32;
+    fn pixel_at_mut(&mut self, x: i64, y: i64) -> Option<&mut u32>;
+}
+```
+
+**なぜ `pixels_per_line` と `width` が別々？**
+
+実際のVRAMは、画面幅より大きい場合があります（パディング）：
+
+```
+画面: 1920x1080
+実際のVRAM: 2048ピクセル/行（アライメントのため）
+
+メモリレイアウト:
+行0: [1920ピクセル（表示）][128ピクセル（未使用）]
+行1: [1920ピクセル（表示）][128ピクセル（未使用）]
+...
+```
+
+ピクセル (x, y) のアドレス計算：
+```
+address = base + (y * pixels_per_line + x) * bytes_per_pixel
+```
+
+### 8.4 VRAMへの描画
+
+GOPから取得したVRAMアドレスに直接書き込むことで、画面表示が可能です。
+
+**基本的な描画パターン:**
+```rust
+// ピクセル (x, y) のアドレス計算
+address = frame_buffer_base + (y * pixels_per_line + x) * bytes_per_pixel
+
+// そのアドレスに色データ（32ビット）を書き込む
+*(address as *mut u32) = color;  // 例: 0xFFFFFF (白)
+```
+
+**VRAMの特徴:**
+- メモリマップドI/O: メモリへの書き込みが直接画面に反映
+- バッファリング不要: 書き込んだ瞬間に画面が変わる
+- OS不要: UEFIファームウェアだけで描画可能
+
+---
+
+## 9. メモリマップの取得とブートサービスの終了
+
+### 9.1 なぜメモリマップが必要か
+
+OSカーネルを起動する際、**どのメモリ領域が使用可能か**を知る必要があります。
+
+**メモリマップの役割:**
+- システム全体のメモリ配置を把握
+- UEFIファームウェアが使用中の領域を避ける
+- OSが自由に使えるメモリ（CONVENTIONAL_MEMORY）を特定
+- 予約済み領域（ハードウェア、ACPIテーブル等）の位置を確認
+
+### 9.2 メモリディスクリプタの構造
+
+UEFIは、メモリを**ページ単位**（4KiB = 4096バイト）で管理します。
+
+```rust
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+struct EfiMemoryDescriptor {
+    memory_type: EfiMemoryType,      // メモリの種類
+    physical_start: u64,              // 物理アドレスの開始位置
+    virtual_start: u64,               // 仮想アドレス（通常0）
+    number_of_pages: u64,             // ページ数（1ページ=4KiB）
+    attribute: u64,                   // メモリ属性フラグ
+}
+```
+
+**フィールドの説明:**
+
+| フィールド | 説明 | 例 |
+|-----------|------|---|
+| `memory_type` | メモリの用途 | CONVENTIONAL_MEMORY（使用可能） |
+| `physical_start` | 開始物理アドレス | 0x0010_0000（1MiB地点） |
+| `number_of_pages` | ページ数 | 256（= 1MiB） |
+| `attribute` | 属性（読み書き可否等） | 0x0000_000F |
+
+**サイズ計算:**
+```
+メモリ領域のサイズ = number_of_pages × 4096 バイト
+```
+
+### 11.3 メモリタイプの種類
+
+```rust
+#[repr(i64)]
+pub enum EfiMemoryType {
+    RESERVED = 0,                    // 予約済み
+    LOADER_CODE,                     // ブートローダーコード
+    LOADER_DATA,                     // ブートローダーデータ
+    BOOT_SERVICES_CODE,              // UEFIブートサービスコード
+    BOOT_SERVICES_DATA,              // UEFIブートサービスデータ
+    RUNTIME_SERVICES_CODE,           // UEFIランタイムサービスコード
+    RUNTIME_SERVICES_DATA,           // UEFIランタイムサービスデータ
+    CONVENTIONAL_MEMORY,             // ← OSが自由に使える！
+    UNUSABLE_MEMORY,                 // 使用不可（ハードウェアエラー等）
+    ACPI_RECLAIM_MEMORY,             // ACPI終了後に再利用可能
+    ACPI_MEMORY_NVS,                 // ACPI NVS（再利用不可）
+    MEMORY_MAPPED_IO,                // メモリマップドI/O
+    MEMORY_MAPPED_IO_PORT_SPACE,     // I/Oポート空間
+    PAL_CODE,                        // プロセッサ固有コード
+    PERSISTENT_MEMORY,               // 不揮発性メモリ
+}
+```
+
+**重要なタイプ:**
+- **CONVENTIONAL_MEMORY**: OSが自由に使える通常メモリ
+- **BOOT_SERVICES_CODE/DATA**: `ExitBootServices()` 後に再利用可能
+- **RUNTIME_SERVICES_CODE/DATA**: OS実行中もUEFIが使用（再利用不可）
+- **ACPI_RECLAIM_MEMORY**: ACPIパース後に再利用可能
+
+### 11.4 get_memory_map関数
+
+#### 関数のシグネチャ
+
+```rust
+get_memory_map: extern "win64" fn(
+    memory_map_size: *mut usize,        // [IN/OUT] バッファサイズ
+    memory_map: *mut u8,                // [OUT] メモリマップバッファ
+    map_key: *mut usize,                // [OUT] マップキー
+    descriptor_size: *mut usize,        // [OUT] ディスクリプタサイズ
+    descriptor_version: *mut u32,       // [OUT] ディスクリプタバージョン
+) -> EfiStatus,
+```
+
+**各パラメータの役割:**
+
+| パラメータ | 型 | 説明 |
+|-----------|---|------|
+| `memory_map_size` | IN/OUT | バッファサイズ（不足時は必要サイズが返る） |
+| `memory_map` | OUT | メモリディスクリプタの配列を格納 |
+| `map_key` | OUT | メモリマップのバージョン識別子 |
+| `descriptor_size` | OUT | 各ディスクリプタのバイト数 |
+| `descriptor_version` | OUT | ディスクリプタ構造のバージョン |
+
+#### map_keyの重要性
+
+`map_key` は**メモリマップのスナップショット識別子**です。
+
+```
+時刻 T1: get_memory_map() → map_key = 123
+時刻 T2: （他の処理でメモリ状態が変化）
+時刻 T3: get_memory_map() → map_key = 124（変化！）
+```
+
+**なぜ重要？**
+- `ExitBootServices()` は正確なmap_keyを要求する
+- メモリ状態が変わるとmap_keyも変わる
+- 古いmap_keyでExitすると失敗する
+
+### 11.5 メモリマップの管理構造
+
+wasabiでは、メモリマップを管理する専用の構造体を定義しています：
+
+```rust
+const MEMORY_MAP_BUFFER_SIZE: usize = 0x8000;  // 32KiB
+
+struct MemoryMapHolder {
+    memory_map_buffer: [u8; MEMORY_MAP_BUFFER_SIZE],  // ディスクリプタ配列
+    memory_map_size: usize,                           // 実際のサイズ
+    map_key: usize,                                   // マップキー
+    descriptor_size: usize,                           // ディスクリプタのサイズ
+    descriptor_version: u32,                          // バージョン
+}
+```
+
+**バッファサイズの決定:**
+- 1ディスクリプタ ≒ 48バイト
+- 32KiB ÷ 48 ≒ 682個のディスクリプタ
+- 通常のシステムでは十分（実際は100〜200個程度）
+
+#### メモリマップの反復処理
+
+```rust
+impl MemoryMapHolder {
+    pub fn iter(&self) -> MemoryMapIterator {
+        MemoryMapIterator { map: self, ofs: 0 }
+    }
+}
+
+impl<'a> Iterator for MemoryMapIterator<'a> {
+    type Item = &'a EfiMemoryDescriptor;
+
+    fn next(&mut self) -> Option<&'a EfiMemoryDescriptor> {
+        if self.ofs >= self.map.memory_map_size {
+            None
+        } else {
+            // バッファ内の現在位置からディスクリプタを取得
+            let e: &EfiMemoryDescriptor = unsafe {
+                &*(self.map.memory_map_buffer.as_ptr().add(self.ofs)
+                   as *const EfiMemoryDescriptor)
+            };
+            self.ofs += self.map.descriptor_size;  // 次のディスクリプタへ
+            Some(e)
+        }
+    }
+}
+```
+
+**仕組み:**
+1. バッファの先頭から `descriptor_size` バイトずつ読む
+2. 各チャンクを `EfiMemoryDescriptor` として解釈
+3. `memory_map_size` に達するまで繰り返す
+
+### 11.6 メモリマップの取得と利用
+
+```rust
+fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
+    let mut vram = init_vram(efi_system_table).unwrap();
+    let mut w = VramTextWriter::new(&mut vram);
+
+    // メモリマップを取得
+    let mut memory_map = MemoryMapHolder::new();
+    let status = efi_system_table.boot_services.get_memory_map(&mut memory_map);
+    writeln!(w, "{status:?}").unwrap();  // "Success"
+
+    // 使用可能メモリを集計
+    let mut total_memory_pages = 0;
+    for e in memory_map.iter() {
+        if e.memory_type != EfiMemoryType::CONVENTIONAL_MEMORY {
+            continue;
+        }
+        total_memory_pages += e.number_of_pages;
+        writeln!(w, "{e:?}").unwrap();  // ディスクリプタを表示
+    }
+
+    // MiB単位で表示
+    let total_memory_size_mib = total_memory_pages * 4096 / 1024 / 1024;
+    writeln!(w, "Total: {total_memory_pages} pages = {total_memory_size_mib} MiB").unwrap();
+}
+```
+
+**出力例:**
+```
+Success
+EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 0x100000, ... }
+EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 0x1000000, ... }
+...
+Total: 262144 pages = 1024 MiB
+```
+
+---
+
+## 12. ExitBootServices - UEFIからOSへの移行
+
+### 12.1 ExitBootServicesの役割
+
+`ExitBootServices()` は、**UEFIブートサービスを終了し、OSに制御を渡す**重要な関数です。
+
+**実行前:**
+- Boot Servicesが利用可能（メモリ割り当て、プロトコル検索等）
+- UEFIファームウェアがメモリやハードウェアを管理
+
+**実行後:**
+- Boot Servicesは全て無効化（関数呼び出し不可）
+- OSが完全にハードウェアを制御
+- Runtime Servicesのみ利用可能（変数アクセス、リセット等）
+
+### 12.2 関数のシグネチャ
+
+```rust
+exit_boot_services: extern "win64" fn(
+    image_handle: EfiHandle,    // [IN] アプリケーションハンドル
+    map_key: usize,             // [IN] 現在のメモリマップキー
+) -> EfiStatus,
+```
+
+**パラメータ:**
+- `image_handle`: `efi_main` に渡されたハンドル
+- `map_key`: `get_memory_map` で取得したmap_key
+
+### 12.3 なぜmap_keyが必要か
+
+UEFIは、**メモリ状態が変わっていないこと**を確認してからExitします。
+
+```
+シナリオ1: 成功
+1. get_memory_map() → map_key = 100
+2. （メモリ状態変化なし）
+3. exit_boot_services(handle, 100) → Success ✅
+
+シナリオ2: 失敗
+1. get_memory_map() → map_key = 100
+2. （UEFIがメモリを再配置）→ map_key内部的に101に
+3. exit_boot_services(handle, 100) → Invalid Parameter ❌
+```
+
+**理由:**
+- メモリマップが古いと、OSが誤った領域にアクセスする危険
+- UEFIは最新のmap_keyでのみExitを許可
+  - Exit後はUEFI管理からOS管理になるため、Exitが成功した後はメモリマップは変わらない
+  - `EfiRuntimeServicesCode`と`EfiRuntimeServicesData`はOSが触っちゃいけない
+
+### 12.4 リトライループの実装
+
+`ExitBootServices` は**失敗する可能性が高い**ため、リトライが必須です。
+
+```rust
+fn exit_from_efi_boot_services(
+    image_handle: EfiHandle,
+    efi_system_table: &EfiSystemTable,
+    memory_map: &mut MemoryMapHolder,
+) {
+    loop {
+        // 1. 最新のメモリマップを取得
+        let status = efi_system_table.boot_services.get_memory_map(memory_map);
+        assert_eq!(status, EfiStatus::Success);
+
+        // 2. Exitを試みる
+        let status = (efi_system_table.boot_services.exit_boot_services)(
+            image_handle,
+            memory_map.map_key,  // 最新のmap_key
+        );
+
+        // 3. 成功したらループを抜ける
+        if status == EfiStatus::Success {
+            break;
+        }
+
+        // 4. 失敗したら再度メモリマップを取得してリトライ
+    }
+}
+```
+
+**ループの流れ:**
+
+```
+┌─────────────────────────────────┐
+│ 1. get_memory_map()             │
+│    → map_key = 100              │
+├─────────────────────────────────┤
+│ 2. exit_boot_services(100)      │
+│    → Invalid Parameter ❌       │ ← メモリ状態が変わった
+├─────────────────────────────────┤
+│ 3. get_memory_map()（再取得）    │
+│    → map_key = 101              │
+├─────────────────────────────────┤
+│ 4. exit_boot_services(101)      │
+│    → Success ✅                 │
+└─────────────────────────────────┘
+```
+
+### 12.5 なぜ失敗するのか
+
+`get_memory_map()` と `exit_boot_services()` の間に、UEFIが内部でメモリを変更する可能性があります。
+
+**失敗の原因例:**
+- 割り込み処理でメモリ割り当て
+- ファームウェアのタイマー処理
+- デバイスドライバの動作
+- 他のEFIアプリケーションの動作
+
+**解決策:**
+- リトライループで最新のmap_keyを取得し続ける
+- 通常は1〜2回のリトライで成功
+
+### 12.6 ExitBootServices後の制約
+
+#### 使えなくなる機能
+
+| 機能 | 状態 |
+|------|------|
+| **メモリ割り当て** | ❌ 不可（AllocatePages, AllocatePool） |
+| **プロトコル検索** | ❌ 不可（LocateProtocol） |
+| **イベント/タイマー** | ❌ 不可 |
+| **コンソールI/O** | ❌ 不可（ConOut, ConIn） |
+| **Graphics Output Protocol** | ❌ 関数は使えない（VRAMは直接アクセス可） |
+
+#### 引き続き使える機能
+
+| 機能 | 状態 |
+|------|------|
+| **VRAM** | ✅ 直接アクセス可能（取得済みアドレス） |
+| **変数アクセス** | ✅ Runtime Services経由 |
+| **時刻取得** | ✅ Runtime Services経由 |
+| **システムリセット** | ✅ Runtime Services経由 |
+
+### 12.7 実際の使用例
+
+wasabiの実装では、以下のような流れでExitBootServicesを実行しています：
+
+```rust
+fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
+    // 1. Graphics Output Protocolを取得（Exit前に必須）
+    let mut vram = init_vram(efi_system_table).expect("init_vram failed");
+    fill_rect(&mut vram, 0x000000, 0, 0, vram.width, vram.height).unwrap();
+    draw_test_pattern(&mut vram);
+
+    let mut w = VramTextWriter::new(&mut vram);
+    for i in 0..4 {
+        writeln!(w, "i={i}").unwrap();
+    }
+
+    // 2. メモリマップを取得して情報を表示
+    let mut memory_map = MemoryMapHolder::new();
+    let status = efi_system_table.boot_services.get_memory_map(&mut memory_map);
+    writeln!(w, "{status:?}").unwrap();  // "Success"
+
+    // 使用可能メモリを集計して画面に表示
+    let mut total_memory_pages = 0;
+    for e in memory_map.iter() {
+        if e.memory_type != EfiMemoryType::CONVENTIONAL_MEMORY {
+            continue;
+        }
+        total_memory_pages += e.number_of_pages;
+        writeln!(w, "{e:?}").unwrap();
+    }
+    let total_memory_size_mib = total_memory_pages * 4096 / 1024 / 1024;
+    writeln!(w, "Total: {total_memory_pages} pages = {total_memory_size_mib} MiB").unwrap();
+
+    // 3. ブートサービスを終了
+    exit_from_efi_boot_services(image_handle, efi_system_table, &mut memory_map);
+
+    // ここからはOS環境（Boot Services使用不可）
+    writeln!(w, "Hello, Non-UEFI world!").unwrap();  // VRAMは引き続き使える
+
+    loop { hlt(); }
+}
+```
+
+**実行時の画面表示:**
+```
+i=0
+i=1
+i=2
+i=3
+Success
+EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 0x100000, ... }
+EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 0x1000000, ... }
+...
+Total: 262144 pages = 1024 MiB
+Hello, Non-UEFI world!
+```
+
+この例では、ExitBootServices前にメモリマップの情報を画面に表示してから、OSモードに移行しています。
+
+### 12.8 Boot Services Tableのオフセット
+
+```rust
+#[repr(C)]
+struct EfiBootServicesTable {
+    _reserved0: [u64; 7],              // 56バイトまでスキップ
+    get_memory_map: extern "win64" fn(...),  // +56
+    _reserved1: [u64; 21],             // 232バイトまでスキップ
+    exit_boot_services: extern "win64" fn(...),  // +232
+    _reserved4: [u64; 10],             // 320バイトまでスキップ
+    locate_protocol: extern "win64" fn(...),  // +320
+}
+
+const _: () = assert!(offset_of!(EfiBootServicesTable, get_memory_map) == 56);
+const _: () = assert!(offset_of!(EfiBootServicesTable, exit_boot_services) == 232);
+const _: () = assert!(offset_of!(EfiBootServicesTable, locate_protocol) == 320);
+```
+
+---
+
+## 13. まとめ：UEFI環境からOSカーネルへ
+
+### 13.1 全体の流れ
 
 ```
 1. UEFI ファームウェア起動
    ↓
-2. efi_main(image_handle, system_table) が呼ばれる
+2. efi_main() が呼ばれる
+   ├─ image_handle: アプリケーション識別子
+   └─ system_table: UEFIサービスへのポインタ
    ↓
-3. system_table.boot_services (96バイト目) を読む
+3. Graphics Output Protocol を取得
+   ├─ locate_protocol(GOP_GUID) でGOPを検索
+   └─ VRAM アドレスを取得（Exit後も使用）
    ↓
-4. boot_services.locate_protocol (320バイト目) を読む
+4. メモリマップを取得
+   ├─ get_memory_map() でシステムメモリ情報を取得
+   ├─ CONVENTIONAL_MEMORY を集計（OS使用可能領域）
+   └─ map_key を保存（ExitBootServices用）
    ↓
-5. locate_protocol(GOP_GUID, null, &mut gop) を呼ぶ
+5. UEFIブートサービスを終了
+   ├─ リトライループで exit_boot_services() を呼ぶ
+   ├─ 成功するまで get_memory_map() を再取得
+   └─ Boot Services 完全無効化
    ↓
-6. UEFI が GOP を検索して gop に書き込む
-   ↓
-7. gop.mode.frame_buffer_base で VRAM アドレス取得
-   ↓
-8. VRAM に直接書き込んで画面表示
+6. OS環境に移行
+   ├─ VRAMへの直接アクセスは継続
+   ├─ Runtime Services のみ利用可能
+   └─ カーネルが完全にハードウェアを制御
 ```
 
-### 重要なポイント
+### 13.2 重要なポイント
 
-1. **メモリレイアウト**: UEFI仕様と完全一致が必須
-2. **reserved フィールド**: 使わないフィールドも正しい位置に配置
-3. **ポインタチェーン**: System Table → Boot Services → 関数/プロトコル
-4. **型安全性**: `const assert!` でコンパイル時検証
-5. **プロトコル**: GUID で識別される機能の集合
+| トピック | 重要事項 |
+|---------|---------|
+| **メモリマップ** | OSが使える領域を把握するため必須 |
+| **map_key** | メモリ状態の一貫性を保証する識別子 |
+| **リトライループ** | ExitBootServicesは失敗する可能性が高い |
+| **Exit前の準備** | 必要なプロトコルは全てExit前に取得 |
+| **VRAM継続利用** | GOPは無効化されるがVRAMは直接使える |
 
-### 次のステップ
+### 13.3 次のステップ
 
-- 文字表示（Simple Text Output Protocol）
-- キーボード入力（Simple Text Input Protocol）
-- ファイルアクセス（Simple File System Protocol）
-- カーネルのロード（Image Protocol）
+- **ページングの有効化**: 仮想メモリ管理
+- **割り込みハンドラ**: IDT（Interrupt Descriptor Table）の設定
+- **カーネルヒープ**: 動的メモリアロケータの実装
+- **タスク管理**: マルチタスク機能の実装
+- **デバイスドライバ**: キーボード、ディスク等のドライバ実装
 
 ---
 
 ## 参考資料
 
 - [UEFI Specification 2.10](https://uefi.org/specifications)
+  - 12.9: Graphics Output Protocol
+  - 11: Protocols - Console Support
 - [OSDev Wiki - UEFI](https://wiki.osdev.org/UEFI)
+- [OSDev Wiki - Drawing In a Linear Framebuffer](https://wiki.osdev.org/Drawing_In_a_Linear_Framebuffer)
 - [Rust UEFI Book](https://rust-osdev.github.io/uefi-rs/)
