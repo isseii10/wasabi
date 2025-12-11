@@ -33,11 +33,14 @@ struct Header {
 }
 
 const HEADER_SIZE: usize = size_of::<Header>();
+
 #[allow(clippy::assertions_on_constants)]
 const _: () = assert!(HEADER_SIZE == 32);
 // Size of Header should be power of 2
 const _: () = assert!(HEADER_SIZE.count_ones() == 1);
+
 pub const LAYOUT_PAGE_4K: Layout = unsafe { Layout::from_size_align_unchecked(4096, 4096) };
+
 impl Header {
     fn can_provide(&self, size: usize, align: usize) -> bool {
         // This check is rough - actual size needed may be smaller.
@@ -135,7 +138,7 @@ pub struct FirstFitAllocator {
 
 #[global_allocator]
 pub static ALLOCATOR: FirstFitAllocator = FirstFitAllocator {
-    first_header: RefCell::New(None),
+    first_header: RefCell::new(None),
 };
 
 unsafe impl Sync for FirstFitAllocator {}
