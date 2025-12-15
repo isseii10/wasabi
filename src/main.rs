@@ -11,6 +11,7 @@ use wasabi::graphics::fill_rect;
 use wasabi::graphics::Bitmap;
 use wasabi::info;
 use wasabi::init::init_basic_runtime;
+use wasabi::init::init_paging;
 use wasabi::println;
 use wasabi::qemu::exit_qemu;
 use wasabi::qemu::QemuExitCode;
@@ -74,6 +75,8 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     info!("Exeption initialized!");
     trigger_debug_interrupt();
     info!("Exeption continued.");
+    init_paging(&memory_map);
+    info!("Now we are using our own page tables!");
     loop {
         hlt();
     }
