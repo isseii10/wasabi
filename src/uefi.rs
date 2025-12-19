@@ -134,7 +134,7 @@ impl<'a> Iterator for MemoryMapIterator<'a> {
 pub struct EfiBootServicesTable {
     _reserved0: [u64; 7],
     get_memory_map: extern "win64" fn(
-        get_memory_map_size: *mut usize,
+        memory_map_size: *mut usize,
         memory_map: *mut u8,
         map_key: *mut usize,
         descriptor_size: *mut usize,
