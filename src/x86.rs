@@ -174,7 +174,7 @@ impl<const LEVEL: usize, const SHIFT: usize, NEXT: fmt::Debug> fmt::Debug
     }
 }
 
-pub type PT = Table<1, 23, [u8; PAGE_SIZE]>;
+pub type PT = Table<1, 12, [u8; PAGE_SIZE]>;
 pub type PD = Table<2, 21, PT>;
 pub type PDPT = Table<3, 30, PD>;
 pub type PML4 = Table<4, 39, PDPT>;
