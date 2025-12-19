@@ -1,6 +1,139 @@
-# Chapter 3: メモリアロケータの実装
+# Chapter 3: ページング、割り込み、メモリアロケータ
 
-## Header構造体のメモリレイアウト
+このドキュメントでは、chapter3で実装した主要な機能について解説します。
+
+## 目次
+
+1. [x86_64ページングの実装](#x86_64ページングの実装)
+2. [割り込み処理の実装](#割り込み処理の実装)
+3. [メモリアロケータの実装](#メモリアロケータの実装)
+
+---
+
+## x86_64ページングの実装
+
+### ページング機構の概要
+
+x86_64アーキテクチャでは、**4レベルページテーブル**を使用して仮想アドレスを物理アドレスに変換します。
+
+#### ページテーブルの階層構造
+
+```
+仮想アドレス (48ビット使用)
+┌────────┬────────┬────────┬────────┬─────────────┐
+│ PML4   │ PDPT   │   PD   │   PT   │   Offset    │
+│ (9bit) │ (9bit) │ (9bit) │ (9bit) │   (12bit)   │
+│ 47-39  │ 38-30  │ 29-21  │ 20-12  │    11-0     │
+└────────┴────────┴────────┴────────┴─────────────┘
+```
+
+**各レベルで使用するビット範囲とSHIFT値:**
+
+| テーブル | LEVEL | 使用ビット | SHIFT値 |
+|---------|-------|-----------|---------|
+| PML4    | 4     | bits 47-39 | 39 |
+| PDPT    | 3     | bits 38-30 | 30 |
+| PD      | 2     | bits 29-21 | 21 |
+| PT      | 1     | bits 20-12 | 12 |
+
+### Rustでの実装
+
+```rust
+#[repr(align(4096))]
+pub struct Table<const LEVEL: usize, const SHIFT: usize, NEXT> {
+    entry: [Entry<LEVEL, SHIFT, NEXT>; 512],
+}
+
+pub type PT = Table<1, 12, [u8; PAGE_SIZE]>;
+pub type PD = Table<2, 21, PT>;
+pub type PDPT = Table<3, 30, PD>;
+pub type PML4 = Table<4, 39, PDPT>;
+
+fn calc_index(&self, addr: u64) -> usize {
+    ((addr >> SHIFT) & 0b1_1111_1111) as usize
+}
+```
+
+### ページマッピングの実装
+
+```rust
+impl PML4 {
+    pub fn create_mapping(
+        &mut self,
+        virt_start: u64,
+        virt_end: u64,
+        phys: u64,
+        attr: PageAttr,
+    ) -> Result<()> {
+        // 4重ループでPML4→PDPT→PD→PTを辿る
+        // ensure_populated()で必要なテーブルを自動作成
+        // 連続したページをマッピング
+    }
+}
+```
+
+---
+
+## 割り込み処理の実装
+
+### IDT (Interrupt Descriptor Table)
+
+各割り込み番号に対応するハンドラのアドレスを格納するテーブルです。
+
+```rust
+#[repr(C, packed)]
+pub struct IdtDescriptor {
+    offset_low: u16,
+    segment_selector: u16,
+    ist_index: u8,          // IST (Interrupt Stack Table) インデックス
+    attr: IdtAttr,
+    offset_mid: u16,
+    offset_high: u32,
+    _reserved: u32,
+}
+```
+
+### IST (Interrupt Stack Table)
+
+特定の例外用に専用スタックを確保する仕組みです。
+
+**なぜ必要か:**
+- Double Fault (#8) 等の重大な例外では、スタックが壊れている可能性がある
+- 専用スタックを使うことで、スタック破損に関係なく確実にハンドラを実行できる
+
+```rust
+entries[8] = IdtDescriptor::new(
+    segment_selector,
+    2,  // IST[2]を使用（Double Fault専用スタック）
+    IdtAttr::IntGateDPL0,
+    interrupt_entrypoint8,
+);
+```
+
+### 割り込みハンドラのエントリポイント
+
+マクロで各割り込み番号のエントリポイントを生成：
+
+```rust
+macro_rules! interrupt_entrypoint {
+    ($index:literal) => {
+        global_asm!(concat!(
+            ".global interrupt_entrypoint", stringify!($index), "\n",
+            "interrupt_entrypoint", stringify!($index), ":\n",
+            "push 0 // No error code\n",
+            "push rcx\n",
+            "mov rcx, ", stringify!($index), "\n",
+            "jmp inthandler_common"
+        ));
+    };
+}
+```
+
+---
+
+## メモリアロケータの実装
+
+### Header構造体のメモリレイアウト
 
 ### 構造体定義
 
@@ -278,6 +411,116 @@ unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
 
 ## サイズとアライメントの調整
 
+### アライメントとは
+
+**アライメント (Alignment)** とは、メモリアドレスが特定の倍数になるように配置する制約のことです。
+
+#### なぜアライメントが必要か
+
+1. **CPU命令の要求**
+   - 多くのCPU命令は特定のアライメントを要求する
+   - 例: x86_64の`movdqa`命令は16バイトアライメント必須
+
+2. **パフォーマンス**
+   - アライメントされていないアクセスは遅い（複数回のメモリアクセスが必要）
+   - キャッシュライン境界をまたぐと性能が低下
+
+3. **ハードウェア制約**
+   - 一部のアーキテクチャではアライメント違反で例外が発生
+   - ページ境界をまたぐと複数ページアクセスが必要（TLBミス増加）
+
+#### データ型とアライメント
+
+Rustの各型には**自然なアライメント**があります：
+
+**基本型:**
+```rust
+u8   → align=1  (どのアドレスでもOK)
+u16  → align=2  (2の倍数アドレス)
+u32  → align=4  (4の倍数アドレス)
+u64  → align=8  (8の倍数アドレス)
+u128 → align=8  (x86_64では8、AArch64では16)
+```
+
+**複合型:**
+```rust
+// 配列 - 要素のアライメントを継承
+[u8; 100]  → align=1
+[u64; 10]  → align=8
+
+// 構造体 - 最大メンバーのアライメント
+struct Foo {
+    a: u8,   // align=1
+    b: u64,  // align=8
+}
+// → Foo全体のalign=8（最大メンバー）
+
+// Wasabi Header
+struct Header {
+    next_header: Option<Box<Header>>,  // 8バイト, align=8
+    size: usize,                        // 8バイト, align=8
+    is_allocated: bool,                 // 1バイト, align=1
+    _reserved: usize,                   // 8バイト, align=8
+}
+// → Header全体のalign=8（usize/ポインタのアライメント）
+```
+
+#### ページ境界とアライメント
+
+アライメントが不十分だと**ページ境界をまたぐ**問題が発生：
+
+```
+align=8の場合（u128で16バイト確保）:
+ページ境界
+  ↓
+  |...0xFF8|0x000|0x008|  ← 16バイトがページをまたぐ
+  |Page 0  |  Page 1   |
+
+結果:
+- 2回のメモリアクセスが必要
+- TLBミスのリスク増加
+- キャッシュライン跨ぎの可能性
+```
+
+align=16にすれば問題を回避：
+```
+align=16の場合:
+  |...0xFF0|███████████|  ← ページ内に収まる
+  |Page 0  |  Page 1   |
+```
+
+#### Layout構造体のalignの決定
+
+`alloc::alloc::Layout`のalignは**呼び出し側**が決定します：
+
+**1. コンパイラの自動決定（型から）:**
+```rust
+let x = Box::new(123u64);  // コンパイラがLayout::new::<u64>()を生成
+// → align=8 (u64の自然なアライメント)
+```
+
+**2. プログラマの明示的指定:**
+```rust
+let layout = Layout::from_size_align(1234, 64).unwrap();
+// → align=64 (明示的に指定)
+```
+
+**3. 定数定義（システム要求）:**
+```rust
+pub const LAYOUT_PAGE_4K: Layout =
+    unsafe { Layout::from_size_align_unchecked(4096, 4096) };
+// → align=4096 (ページ境界アライメント)
+```
+
+allocator.rsのテストでは様々なアライメントを検証：
+```rust
+for align in [1, 2, 4, 8, 16, 32, 4096] {
+    let layout = Layout::from_size_align(1234, align).unwrap();
+    let ptr = ALLOCATOR.alloc_with_options(layout);
+    assert!(ptr as usize % align == 0);  // アライメント検証
+}
+```
+
 ### サイズの2の累乗への切り上げ
 
 ```rust
@@ -424,3 +667,14 @@ Wasabiのメモリアロケータは、シンプルながら効率的な設計�
 - ✅ **UEFI統合**: Memory Mapから自動構築
 
 この実装は、OSカーネル開発の基礎として十分な機能を提供しつつ、将来的な拡張の余地も残しています。
+
+---
+
+## 参考資料
+
+- [Intel® 64 and IA-32 Architectures Software Developer's Manual](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
+  - Volume 3A: 4章 ページング
+  - Volume 3A: 6章 割り込みと例外処理
+- [OSDev Wiki - Paging](https://wiki.osdev.org/Paging)
+- [OSDev Wiki - Interrupt Descriptor Table](https://wiki.osdev.org/Interrupt_Descriptor_Table)
+- [OSDev Wiki - Memory Allocation](https://wiki.osdev.org/Memory_Allocation)
