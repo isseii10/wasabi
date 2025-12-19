@@ -6,9 +6,9 @@ image_handle: 0x00000000BEC4E498
 efi_system_table: 0x00000000bf9ee018
 image_base: 0000000000BE339000
 image_size: 00000000000006C000
-[INFO] src/main.rs:38 : info
-[WARN] src/main.rs:39 : warn
-[ERROR] src/main.rs:40 : error
+[INFO] src/main.rs:41 : info
+[WARN] src/main.rs:42 : warn
+[ERROR] src/main.rs:43 : error
 cr3 = 0x00000000bfc01000
 Some(L4Table @ 0x00000000bfc01000 {
  entry[  0] = L4Entry @ 0x00000000bfc01000 { 0x00000000BFC02023 PWS }
@@ -601,26 +601,26 @@ None
 [INFO] src/x86.rs:803: Loading GDT @ 0x000000013FF7FE20
 [INFO] src/x86.rs:806: Loading TSS (selector = 0x18 )
 [INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x13ff7ee00 }
-[INFO] src/main.rs:75 : Exeption initialized!
+[INFO] src/main.rs:78 : Exeption initialized!
 [ERROR] src/x86.rs:505: Interrupt Info: 
             {
-                 rip: 0x00000000BE3497A5, CS: 0x0008,
-                 rsp: 0x00000000BFEB09F0, SS: 0x0010,
-                 rbp: 0x00000000BFEB09F0,
+                 rip: 0x00000000BE349805, CS: 0x0008,
+                 rsp: 0x00000000BFEB09E0, SS: 0x0010,
+                 rbp: 0x00000000BFEB09E0,
 
-                 rflags: 0x0000000000000006,
+                 rflags: 0x0000000000000002,
                  error_code: 0x0000000000000000,
 
                  rax: 0x0000000000000000, rcx: 0x00000000BFEB0600,
                  rdx: 0x0000000000000017, rbx: 0x00000000BE4FD5C8,
                  rsi: 0x0000000000000002, rdi: 0x0000000000000000,
                  r8: 0x0000000000000001, r9: 0x0000000000000018,
-                 r10: 0x00000000BFEB07C0, r11: 0x0000000000000001,
+                 r10: 0x00000000BFEB07B0, r11: 0x0000000000000001,
                  r12: 0x0000000000000000, r13: 0x0000000000000000,
                  r14: 0x00000000BE4FD518, r15: 0x0000000000000005,
 
              }
 [ERROR] src/x86.rs:506: Exception 0x03: 
 [ERROR] src/x86.rs:509: Breakpoint
-[INFO] src/main.rs:77 : Exeption continued.
-[INFO] src/main.rs:79 : Now we are using our own page tables!
+[INFO] src/main.rs:80 : Exeption continued.
+[INFO] src/main.rs:82 : Now we are using our own page tables!
