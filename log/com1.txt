@@ -4,11 +4,11 @@ BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 Booting WasabiOS...
 image_handle: 0x00000000BEC4E498
 efi_system_table: 0x00000000bf9ee018
-image_base: 0000000000BE339000
-image_size: 00000000000006C000
-[INFO] src/main.rs:41 : info
-[WARN] src/main.rs:42 : warn
-[ERROR] src/main.rs:43 : error
+image_base: 0000000000BE320000
+image_size: 000000000000079000
+[INFO] src/main.rs:46 : info
+[WARN] src/main.rs:47 : warn
+[ERROR] src/main.rs:48 : error
 cr3 = 0x00000000bfc01000
 Some(L4Table @ 0x00000000bfc01000 {
  entry[  0] = L4Entry @ 0x00000000bfc01000 { 0x00000000BFC02023 PWS }
@@ -601,26 +601,38 @@ None
 [INFO] src/x86.rs:803: Loading GDT @ 0x000000013FF7FE20
 [INFO] src/x86.rs:806: Loading TSS (selector = 0x18 )
 [INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x13ff7ee00 }
-[INFO] src/main.rs:78 : Exeption initialized!
+[INFO] src/main.rs:84 : Exeption initialized!
 [ERROR] src/x86.rs:505: Interrupt Info: 
             {
-                 rip: 0x00000000BE349805, CS: 0x0008,
-                 rsp: 0x00000000BFEB09E0, SS: 0x0010,
-                 rbp: 0x00000000BFEB09E0,
+                 rip: 0x00000000BE332BF5, CS: 0x0008,
+                 rsp: 0x00000000BFEB0690, SS: 0x0010,
+                 rbp: 0x00000000BFEB0690,
 
-                 rflags: 0x0000000000000002,
+                 rflags: 0x0000000000000006,
                  error_code: 0x0000000000000000,
 
-                 rax: 0x0000000000000000, rcx: 0x00000000BFEB0600,
+                 rax: 0x0000000000000000, rcx: 0x00000000BFEB0300,
                  rdx: 0x0000000000000017, rbx: 0x00000000BE4FD5C8,
-                 rsi: 0x0000000000000002, rdi: 0x0000000000000000,
+                 rsi: 0x0000000000000003, rdi: 0x0000000000000000,
                  r8: 0x0000000000000001, r9: 0x0000000000000018,
-                 r10: 0x00000000BFEB07B0, r11: 0x0000000000000001,
+                 r10: 0x00000000BFEB0460, r11: 0x0000000000000001,
                  r12: 0x0000000000000000, r13: 0x0000000000000000,
                  r14: 0x00000000BE4FD518, r15: 0x0000000000000005,
 
              }
 [ERROR] src/x86.rs:506: Exception 0x03: 
 [ERROR] src/x86.rs:509: Breakpoint
-[INFO] src/main.rs:80 : Exeption continued.
-[INFO] src/main.rs:82 : Now we are using our own page tables!
+[INFO] src/main.rs:86 : Exeption continued.
+[INFO] src/main.rs:88 : Now we are using our own page tables!
+[INFO] src/main.rs:103: HPET is at 0x00000000fed00000
+[INFO] src/executor.rs:90 : Executor starts running...
+[INFO] src/main.rs:108: 100 hpet.main_counter = 326600
+[INFO] src/main.rs:115: 200 hpet.main_counter = 461700
+[INFO] src/main.rs:108: 101 hpet.main_counter = 531200
+[INFO] src/main.rs:115: 201 hpet.main_counter = 574700
+[INFO] src/main.rs:108: 102 hpet.main_counter = 614000
+[INFO] src/main.rs:115: 202 hpet.main_counter = 656500
+[INFO] src/main.rs:108: 103 hpet.main_counter = 697900
+[INFO] src/main.rs:115: 203 hpet.main_counter = 733900
+[INFO] src/executor.rs:98 : Task completed: Task(src/main.rs:106):Ok(())
+[INFO] src/executor.rs:98 : Task completed: Task(src/main.rs:113):Ok(())

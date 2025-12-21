@@ -6,9 +6,13 @@ use core::fmt::Write;
 use core::panic::PanicInfo;
 use core::writeln;
 use wasabi::error;
+use wasabi::executor::yield_execution;
+use wasabi::executor::Executor;
+use wasabi::executor::Task;
 use wasabi::graphics::draw_test_pattern;
 use wasabi::graphics::fill_rect;
 use wasabi::graphics::Bitmap;
+use wasabi::hpet::Hpet;
 use wasabi::info;
 use wasabi::init::init_basic_runtime;
 use wasabi::init::init_paging;
@@ -23,11 +27,12 @@ use wasabi::uefi::EfiSystemTable;
 use wasabi::uefi::VramTextWriter;
 use wasabi::warn;
 use wasabi::x86::flush_tlb;
-use wasabi::x86::hlt;
 use wasabi::x86::init_exceptions;
 use wasabi::x86::read_cr3;
 use wasabi::x86::trigger_debug_interrupt;
 use wasabi::x86::PageAttr;
+
+static mut GLOBAL_HPET: Option<Hpet> = None;
 
 #[no_mangle]
 fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
@@ -48,6 +53,7 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     fill_rect(&mut vram, 0x000000, 0, 0, vw, vh).expect("fill_rect failed");
     draw_test_pattern(&mut vram);
     let mut w = VramTextWriter::new(&mut vram);
+    let acpi = efi_system_table.acpi_table().expect("ACPI table not found");
     let memory_map = init_basic_runtime(image_handle, efi_system_table);
     let mut total_memory_pages = 0;
     for e in memory_map.iter() {
@@ -90,9 +96,31 @@ fn efi_main(image_handle: EfiHandle, efi_system_table: &EfiSystemTable) {
     }
     flush_tlb();
 
-    loop {
-        hlt();
-    }
+    let hpet = acpi.hpet().expect("Failed to get HPET from ACPI");
+    let hpet = hpet
+        .base_address()
+        .expect("Failed to get HPET base address");
+    info!("HPET is at {hpet:#p}");
+    let hpet = Hpet::new(hpet);
+    let hpet = unsafe { GLOBAL_HPET.insert(hpet) };
+    let task1 = Task::new(async {
+        for i in 100..=103 {
+            info!("{i} hpet.main_counter = {}", hpet.main_counter());
+            yield_execution().await;
+        }
+        Ok(())
+    });
+    let task2 = Task::new(async {
+        for i in 200..=203 {
+            info!("{i} hpet.main_counter = {}", hpet.main_counter());
+            yield_execution().await;
+        }
+        Ok(())
+    });
+    let mut executor = Executor::new();
+    executor.enqueue(task1);
+    executor.enqueue(task2);
+    Executor::run(executor)
 }
 
 #[panic_handler]
