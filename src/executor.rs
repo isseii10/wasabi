@@ -1,5 +1,6 @@
 extern crate alloc;
 
+use crate::hpet::global_timestamp;
 use crate::info;
 use crate::result::Result;
 use crate::x86::busy_loop_hint;
@@ -17,6 +18,7 @@ use core::task::Poll;
 use core::task::RawWaker;
 use core::task::RawWakerVTable;
 use core::task::Waker;
+use core::time::Duration;
 
 pub struct Task<T> {
     future: Pin<Box<dyn Future<Output = Result<T>>>>,
@@ -128,4 +130,25 @@ impl Future for Yield {
 
 pub async fn yield_execution() {
     Yield::default().await
+}
+
+pub struct TimeoutFuture {
+    time_out: Duration,
+}
+impl TimeoutFuture {
+    pub fn new(duration: Duration) -> Self {
+        Self {
+            time_out: global_timestamp() + duration,
+        }
+    }
+}
+impl Future for TimeoutFuture {
+    type Output = ();
+    fn poll(self: Pin<&mut Self>, _: &mut Context) -> Poll<()> {
+        if self.time_out < global_timestamp() {
+            Poll::Ready(())
+        } else {
+            Poll::Pending
+        }
+    }
 }
