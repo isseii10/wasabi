@@ -21,10 +21,10 @@ image_size: 00000000000007A000
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
 [INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369208832, virtual_start: 0, number_of_pages: 262022, attribute: 15 }
 [INFO] src/init.rs:83 : Total: 1037709 pages = 4053 MiB
-[INFO] src/x86.rs:730: TSS64 created @ 0x17FF7FE80
-[INFO] src/x86.rs:803: Loading GDT @ 0x000000017FF7FE20
-[INFO] src/x86.rs:806: Loading TSS (selector = 0x18 )
-[INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
+[INFO] src/x86.rs:743: TSS64 created @ 0x17FF7FE80
+[INFO] src/x86.rs:816: Loading GDT @ 0x000000017FF7FE20
+[INFO] src/x86.rs:819: Loading TSS (selector = 0x18 )
+[INFO] src/x86.rs:694: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
 [INFO] src/init.rs:68 : HPET is at 0x00000000fed00000
 [INFO] src/init.rs:96 : ECAM: Bus [0..=255] is mapped at 0xB0000000
 [INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x29C0)
@@ -36,14 +36,14 @@ image_size: 00000000000007A000
 [INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:171: Starting global executor loop
 [INFO] src/executor.rs:93 : Executor starts running...
-[INFO] src/main.rs:58 : 100 hpet.main_counter = 13.287ms
-[INFO] src/main.rs:65 : 200 hpet.main_counter = 19.949ms
+[INFO] src/main.rs:58 : 100 hpet.main_counter = 11.235ms
+[INFO] src/main.rs:65 : 200 hpet.main_counter = 17.058ms
 [INFO] src/main.rs:76 : Started to monitor serial port
-[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.019477s
-[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.024093s
-[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.028789s
-[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.028787s
+[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.016603s
+[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.020508s
+[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.024407s
+[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.028052s
+[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.024405s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:85):Ok(())
-[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.040091s
-[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.044555s
+[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.028594s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:86):Ok(())
