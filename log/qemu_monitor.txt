@@ -21,6 +21,12 @@ QEMU 10.1.2 monitor - type 'help' for more information
       BAR3: 32 bit memory at 0xc1080000 [0xc1083fff]
       BAR6: 32 bit memory (not mapped)
       id ""
+  Bus  0, device   3, function 0:
+    USB controller: PCI device 1b36:000d
+      PCI subsystem 1af4:1100
+      IRQ 11, pin A
+      BAR0: 64 bit memory at 0x800000000 [0x800003fff]
+      id ""
   Bus  0, device  31, function 0:
     ISA bridge: PCI device 8086:2918
       PCI subsystem 1af4:1100
@@ -38,4 +44,4 @@ QEMU 10.1.2 monitor - type 'help' for more information
       IRQ 10, pin A
       BAR4: I/O at 0x6000 [0x603f]
       id ""
-(qemu) q[K
+(qemu) 
