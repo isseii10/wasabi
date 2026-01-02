@@ -44,4 +44,4 @@ QEMU 10.1.2 monitor - type 'help' for more information
       IRQ 10, pin A
       BAR4: I/O at 0x6000 [0x603f]
       id ""
-(qemu) 
+(qemu) q[K
