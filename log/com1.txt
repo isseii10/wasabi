@@ -1,56 +1,39 @@
-[2J[01;01H[=3h[2J[01;01HBdsDxe: failed to load Boot0001 "UEFI QEMU DVD-ROM QM00003 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Secondary,Master,0x0): Not Found
-BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
-BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
+[2J[01;01H[=3h[2J[01;01HBdsDxe: failed to load Boot0001 "UEFI QEMU DVD-ROM QM00005 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x2,0xFFFF,0x0): Not Found
+BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
+BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 Booting WasabiOS...
-image_handle: 0x00000000BEC4E498
-efi_system_table: 0x00000000bf9ee018
-image_base: 0000000000BE323000
+image_handle: 0x000000007E3F4718
+efi_system_table: 0x000000007f9ee018
+image_base: 000000000140000000
 image_size: 000000000000077000
-[INFO] src/main.rs:39 : info
-[WARN] src/main.rs:40 : warn
-[ERROR] src/main.rs:41 : error
-[INFO] src/main.rs:48 : Hello, Non-UEFI world!
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 764470, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3153420288, virtual_start: 0, number_of_pages: 9165, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3191447552, virtual_start: 0, number_of_pages: 115, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3192897536, virtual_start: 0, number_of_pages: 1, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3194224640, virtual_start: 0, number_of_pages: 2, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3194257408, virtual_start: 0, number_of_pages: 2, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 3219128320, virtual_start: 0, number_of_pages: 154, attribute: 15 }
-[INFO] src/init.rs:78 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:81 : Total: 1038011 pages = 4054 MiB
-[INFO] src/x86.rs:730: TSS64 created @ 0x13FF7FE80
-[INFO] src/x86.rs:803: Loading GDT @ 0x000000013FF7FE20
+[INFO] src/main.rs:40 : info
+[WARN] src/main.rs:41 : warn
+[ERROR] src/main.rs:42 : error
+[INFO] src/main.rs:49 : Hello, Non-UEFI world!
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9143, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119413760, virtual_start: 0, number_of_pages: 1, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369196544, virtual_start: 0, number_of_pages: 262025, attribute: 15 }
+[INFO] src/init.rs:82 : Total: 1037751 pages = 4053 MiB
+[INFO] src/x86.rs:730: TSS64 created @ 0x17FF7FE80
+[INFO] src/x86.rs:803: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:806: Loading TSS (selector = 0x18 )
-[INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x13ff7ee00 }
-[INFO] src/init.rs:66 : HPET is at 0x00000000fed00000
+[INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
+[INFO] src/init.rs:67 : HPET is at 0x00000000fed00000
+[INFO] src/init.rs:95 : ECAM: Bus [0..=255] is mapped at 0xB0000000
 [INFO] src/executor.rs:92 : Executor starts running...
-[INFO] src/main.rs:56 : 100 hpet.main_counter = 7.104ms
-[INFO] src/main.rs:63 : 200 hpet.main_counter = 13.684ms
-[INFO] src/main.rs:74 : Started to monitor serial port
-[INFO] src/main.rs:56 : 101 hpet.main_counter = 1.013243s
-[INFO] src/main.rs:56 : 102 hpet.main_counter = 2.018022s
-[INFO] src/main.rs:63 : 201 hpet.main_counter = 2.023234s
-[INFO] src/main.rs:56 : 103 hpet.main_counter = 3.02328s
-[INFO] src/main.rs:63 : 202 hpet.main_counter = 4.027665s
-[INFO] src/executor.rs:100: Task completed: Task(src/main.rs:54):Ok(())
-[INFO] src/main.rs:63 : 203 hpet.main_counter = 6.032641s
-[INFO] src/executor.rs:100: Task completed: Task(src/main.rs:61):Ok(())
-[INFO] src/main.rs:78 : serial input: 0x68 = Some('h')
-[INFO] src/main.rs:78 : serial input: 0x65 = Some('e')
-[INFO] src/main.rs:78 : serial input: 0x6C = Some('l')
-[INFO] src/main.rs:78 : serial input: 0x6C = Some('l')
-[INFO] src/main.rs:78 : serial input: 0x6F = Some('o')
-[INFO] src/main.rs:78 : serial input: 0x2C = Some(',')
-[INFO] src/main.rs:78 : serial input: 0x20 = Some(' ')
-[INFO] src/main.rs:78 : serial input: 0x77 = Some('w')
-[INFO] src/main.rs:78 : serial input: 0x6F = Some('o')
-[INFO] src/main.rs:78 : serial input: 0x72 = Some('r')
-[INFO] src/main.rs:78 : serial input: 0x6C = Some('l')
-[INFO] src/main.rs:78 : serial input: 0x64 = Some('d')
-[INFO] src/main.rs:78 : serial input: 0x21 = Some('!')
-[INFO] src/main.rs:78 : serial input: 0x1B = Some('\u{1b}')
+[INFO] src/main.rs:58 : 100 hpet.main_counter = 7.638ms
+[INFO] src/main.rs:65 : 200 hpet.main_counter = 17.337ms
+[INFO] src/main.rs:76 : Started to monitor serial port
+[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.016843s
+[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.021869s
+[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.026976s
+[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.026958s
+[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.031638s
+[INFO] src/executor.rs:100: Task completed: Task(src/main.rs:56):Ok(())

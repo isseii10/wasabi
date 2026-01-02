@@ -1,5 +1,6 @@
 use crate::hpet::HpetRegisters;
 use crate::result::Result;
+use core::fmt;
 use core::mem::size_of;
 
 #[repr(packed)]
@@ -11,7 +12,6 @@ struct SystemDescriptionTableHeader {
     length: u32,
     _unused: [u8; 28],
 }
-
 const _: () = assert!(size_of::<SystemDescriptionTableHeader>() == 36);
 
 impl SystemDescriptionTableHeader {
@@ -33,13 +33,12 @@ impl<'a> XsdtIterator<'a> {
         XsdtIterator { table, index: 0 }
     }
 }
-
 impl<'a> Iterator for XsdtIterator<'a> {
     // The item will have a static lifetime
     // since it will be allocated on ACPI_RECLAIM_MEMORY region.
     type Item = &'static SystemDescriptionTableHeader;
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index >= self.table.number_of_entries() {
+        if self.index >= self.table.num_of_entries() {
             None
         } else {
             self.index += 1;
@@ -54,7 +53,6 @@ impl<'a> Iterator for XsdtIterator<'a> {
 struct Xsdt {
     header: SystemDescriptionTableHeader,
 }
-
 const _: () = assert!(size_of::<Xsdt>() == 36);
 
 impl Xsdt {
@@ -64,7 +62,7 @@ impl Xsdt {
     fn header_size(&self) -> usize {
         size_of::<Self>()
     }
-    fn number_of_entries(&self) -> usize {
+    fn num_of_entries(&self) -> usize {
         (self.header.length as usize - self.header_size()) / size_of::<*const u8>()
     }
     unsafe fn entry(&self, index: usize) -> *const u8 {
@@ -95,9 +93,7 @@ pub struct GenericAddress {
     _unused: [u8; 3],
     address: u64,
 }
-
 const _: () = assert!(size_of::<GenericAddress>() == 12);
-
 impl GenericAddress {
     pub fn address_in_memory_space(&self) -> Result<usize> {
         if self.address_space_id == 0 {
@@ -115,7 +111,6 @@ pub struct AcpiHpetDescriptor {
     address: GenericAddress,
     _reserved1: u32,
 }
-
 impl AcpiTable for AcpiHpetDescriptor {
     const SIGNATURE: &'static [u8; 4] = b"HPET";
     type Table = Self;
@@ -149,5 +144,70 @@ impl AcpiRsdpStruct {
     pub fn hpet(&self) -> Option<&AcpiHpetDescriptor> {
         let xsdt = self.xsdt();
         xsdt.find_table(b"HPET").map(AcpiHpetDescriptor::new)
+    }
+    pub fn mcfg(&self) -> Option<&AcpiMcfgDescriptor> {
+        let xsdt = self.xsdt();
+        xsdt.find_table(b"MCFG").map(AcpiMcfgDescriptor::new)
+    }
+}
+
+#[repr(C, packed)]
+#[derive(Debug)]
+#[allow(dead_code)]
+pub struct AcpiMcfgDescriptor {
+    // https://wiki.osdev.org/PCI_Express
+    header: SystemDescriptionTableHeader,
+    _unused: [u8; 8],
+    // 44 + (16 * n) -> Configuration space base address allocation structures
+    // [EcamEntry; ?]
+}
+impl AcpiTable for AcpiMcfgDescriptor {
+    const SIGNATURE: &'static [u8; 4] = b"MCFG";
+    type Table = Self;
+}
+const _: () = assert!(size_of::<AcpiMcfgDescriptor>() == 44);
+impl AcpiMcfgDescriptor {
+    pub fn header_size(&self) -> usize {
+        size_of::<Self>()
+    }
+    pub fn num_of_entries(&self) -> usize {
+        (self.header.length as usize - self.header_size()) / size_of::<EcamEntry>()
+    }
+    pub fn entry(&self, index: usize) -> Option<&EcamEntry> {
+        if index >= self.num_of_entries() {
+            None
+        } else {
+            Some(unsafe {
+                &*((self as *const Self as *const u8).add(self.header_size()) as *const EcamEntry)
+                    .add(index)
+            })
+        }
+    }
+}
+
+#[repr(packed)]
+pub struct EcamEntry {
+    ecm_base_addr: u64,
+    _pci_segment_group: u16,
+    start_pci_bus: u8,
+    end_pci_bus: u8,
+    _reserved: u32,
+}
+impl EcamEntry {
+    pub fn base_address(&self) -> u64 {
+        self.ecm_base_addr
+    }
+}
+impl fmt::Display for EcamEntry {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // To avoid "error: reference to packed field is unaligned"
+        let base = self.ecm_base_addr;
+        let bus_start = self.start_pci_bus;
+        let bus_end = self.end_pci_bus;
+        write!(
+            f,
+            "ECAM: Bus [{}..={}] is mapped at {:#X}",
+            bus_start, bus_end, base
+        )
     }
 }
