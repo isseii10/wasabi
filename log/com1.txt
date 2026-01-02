@@ -5,35 +5,43 @@ Booting WasabiOS...
 image_handle: 0x000000007E3F4718
 efi_system_table: 0x000000007f9ee018
 image_base: 000000000140000000
-image_size: 000000000000077000
+image_size: 000000000000078000
 [INFO] src/main.rs:40 : info
 [WARN] src/main.rs:41 : warn
 [ERROR] src/main.rs:42 : error
 [INFO] src/main.rs:49 : Hello, Non-UEFI world!
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9143, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119413760, virtual_start: 0, number_of_pages: 1, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369196544, virtual_start: 0, number_of_pages: 262025, attribute: 15 }
-[INFO] src/init.rs:82 : Total: 1037751 pages = 4053 MiB
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9143, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119413760, virtual_start: 0, number_of_pages: 1, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
+[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369200640, virtual_start: 0, number_of_pages: 262024, attribute: 15 }
+[INFO] src/init.rs:83 : Total: 1037750 pages = 4053 MiB
 [INFO] src/x86.rs:730: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:803: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:806: Loading TSS (selector = 0x18 )
 [INFO] src/x86.rs:681: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
-[INFO] src/init.rs:67 : HPET is at 0x00000000fed00000
-[INFO] src/init.rs:95 : ECAM: Bus [0..=255] is mapped at 0xB0000000
+[INFO] src/init.rs:68 : HPET is at 0x00000000fed00000
+[INFO] src/init.rs:96 : ECAM: Bus [0..=255] is mapped at 0xB0000000
+[INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x29C0)
+[INFO] src/pci.rs:152: (vendor: 0x1234, device: 0x1111)
+[INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x10D3)
+[INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x2918)
+[INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x2922)
+[INFO] src/pci.rs:152: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:92 : Executor starts running...
-[INFO] src/main.rs:58 : 100 hpet.main_counter = 7.638ms
-[INFO] src/main.rs:65 : 200 hpet.main_counter = 17.337ms
+[INFO] src/main.rs:58 : 100 hpet.main_counter = 7.018ms
+[INFO] src/main.rs:65 : 200 hpet.main_counter = 13.673ms
 [INFO] src/main.rs:76 : Started to monitor serial port
-[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.016843s
-[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.021869s
-[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.026976s
-[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.026958s
-[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.031638s
+[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.013224s
+[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.017897s
+[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.022178s
+[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.02655s
+[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.022169s
 [INFO] src/executor.rs:100: Task completed: Task(src/main.rs:56):Ok(())
+[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.027046s
+[INFO] src/executor.rs:100: Task completed: Task(src/main.rs:63):Ok(())
