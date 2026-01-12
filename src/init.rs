@@ -9,7 +9,6 @@ use crate::hpet::set_global_hpet;
 use crate::hpet::Hpet;
 use crate::info;
 use crate::pci::Pci;
-use crate::println;
 use crate::uefi::exit_from_efi_boot_services;
 use crate::uefi::EfiHandle;
 use crate::uefi::EfiMemoryType;

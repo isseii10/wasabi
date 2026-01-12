@@ -6,7 +6,6 @@ use crate::x86::with_current_page_table;
 use crate::x86::PageAttr;
 use crate::xhci::PciXhciDriver;
 use core::fmt;
-use core::fmt::write;
 use core::marker::PhantomData;
 use core::ops::Range;
 use core::ptr::read_volatile;

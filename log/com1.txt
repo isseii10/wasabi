@@ -2,57 +2,72 @@
 BdsDxe: loading Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 BdsDxe: starting Boot0002 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1F,0x2)/Sata(0x0,0xFFFF,0x0)
 Booting WasabiOS...
-image_handle: 0x000000007EBC5B18
+image_handle: 0x000000007E3C8598
 efi_system_table: 0x000000007f9ee018
 image_base: 000000000140000000
-image_size: 000000000000086000
+image_size: 000000000000098000
 [INFO] src/main.rs:40 : info
 [WARN] src/main.rs:41 : warn
 [ERROR] src/main.rs:42 : error
 [INFO] src/main.rs:49 : Hello, Non-UEFI world!
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9102, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119258112, virtual_start: 0, number_of_pages: 3, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:80 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369257984, virtual_start: 0, number_of_pages: 262010, attribute: 15 }
-[INFO] src/init.rs:83 : Total: 1037697 pages = 4053 MiB
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4096, virtual_start: 0, number_of_pages: 159, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 1048576, virtual_start: 0, number_of_pages: 1792, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8421376, virtual_start: 0, number_of_pages: 3, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 8437760, virtual_start: 0, number_of_pages: 4, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 22020096, virtual_start: 0, number_of_pages: 502326, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2079678464, virtual_start: 0, number_of_pages: 9099, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119262208, virtual_start: 0, number_of_pages: 1, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369331712, virtual_start: 0, number_of_pages: 261992, attribute: 15 }
+[INFO] src/init.rs:82 : Total: 1037674 pages = 4053 MiB
 [INFO] src/x86.rs:745: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:818: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:821: Loading TSS (selector = 0x18 )
 [INFO] src/x86.rs:696: Loading IDT: IdtrParameters { limit: 4096, base: 0x17ff7ee00 }
-[INFO] src/init.rs:68 : HPET is at 0x00000000fed00000
-[INFO] src/init.rs:96 : ECAM: Bus [0..=255] is mapped at 0xB0000000
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x29C0)
-[INFO] src/pci.rs:167: (vendor: 0x1234, device: 0x1111)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x10D3)
-[INFO] src/pci.rs:167: (vendor: 0x1B36, device: 0x000D)
-[INFO] src/xhci.rs:66 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:244: xhci: page_size = 4096
-[INFO] src/xhci.rs:246: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:350: Starting xHC...
-[INFO] src/xhci.rs:352: xHC started running!
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2918)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2922)
-[INFO] src/pci.rs:167: (vendor: 0x8086, device: 0x2930)
+[INFO] src/init.rs:67 : HPET is at 0x00000000fed00000
+[INFO] src/init.rs:95 : ECAM: Bus [0..=255] is mapped at 0xB0000000
+[INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x29C0)
+[INFO] src/pci.rs:166: (vendor: 0x1234, device: 0x1111)
+[INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x10D3)
+[INFO] src/pci.rs:166: (vendor: 0x1B36, device: 0x000D)
+[INFO] src/xhci.rs:92 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
+[INFO] src/xhci.rs:323: xhci: page_size = 4096
+[INFO] src/xhci.rs:325: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:422: Starting xHC...
+[INFO] src/xhci.rs:424: xHC started running!
+[INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2918)
+[INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2922)
+[INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:171: Starting global executor loop
 [INFO] src/executor.rs:93 : Executor starts running...
-[INFO] src/xhci.rs:77 : xhci: cap_regs.MaxSlots = 64
-[INFO] src/xhci.rs:81 : xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:82 : xhci: rt_regs.MFINDEX = 1754
-[INFO] src/executor.rs:101: Task completed: Task(src/xhci.rs:73):Ok(())
-[INFO] src/main.rs:58 : 100 hpet.main_counter = 29.315ms
-[INFO] src/main.rs:65 : 200 hpet.main_counter = 35.688ms
+[INFO] src/xhci.rs:103: xhci: cap_regs.MaxSlots = 64
+[INFO] src/xhci.rs:107: xhci: op_regs.USBSTS = 0
+[INFO] src/xhci.rs:111: xhci: rt_regs.MFINDEX = 1372
+[INFO] src/xhci.rs:115: PORTSC values for port 1..9
+[INFO] src/xhci.rs:119:    1: 0x000202A0
+[INFO] src/xhci.rs:119:    2: 0x000202A0
+[INFO] src/xhci.rs:119:    3: 0x000202A0
+[INFO] src/xhci.rs:119:    4: 0x000202A0
+[INFO] src/xhci.rs:119:    5: 0x00020EE1
+[INFO] src/xhci.rs:119:    6: 0x000202A0
+[INFO] src/xhci.rs:119:    7: 0x000202A0
+[INFO] src/xhci.rs:119:    8: 0x000202A0
+[INFO] src/xhci.rs:136: xhci: port 5 is connected
+[INFO] src/xhci.rs:144: xhci: resetting port 5
+[INFO] src/xhci.rs:146: xhci: port 5 has been reset
+[INFO] src/xhci.rs:151: xhci: port 5 is enabled
+[INFO] src/main.rs:58 : 100 hpet.main_counter = 55.514ms
+[INFO] src/main.rs:65 : 200 hpet.main_counter = 60.937ms
 [INFO] src/main.rs:76 : Started to monitor serial port
-[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.035298s
-[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.039838s
-[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.044356s
-[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.044367s
+[INFO] src/xhci.rs:509: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/xhci.rs:138: slot 1 is assigned for port 5
+[INFO] src/executor.rs:101: Task completed: Task(src/xhci.rs:99):Ok(())
+[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.060622s
+[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.064188s
+[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.06746s
+[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.067506s
+[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.070636s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:85):Ok(())
-[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.05468s
-[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.059228s
+[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.073938s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:86):Ok(())
