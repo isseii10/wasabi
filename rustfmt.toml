@@ -1,4 +1,4 @@
 imports_granularity = "Item"
 error_on_line_overflow = true
-error_on_unformatted = true
+error_on_unformatted = false
 format_code_in_doc_comments = true

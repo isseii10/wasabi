@@ -5,7 +5,7 @@ Booting WasabiOS...
 image_handle: 0x000000007E3C8598
 efi_system_table: 0x000000007f9ee018
 image_base: 000000000140000000
-image_size: 0000000000000AD000
+image_size: 0000000000000B1000
 [INFO] src/main.rs:40 : info
 [WARN] src/main.rs:41 : warn
 [ERROR] src/main.rs:42 : error
@@ -19,8 +19,8 @@ image_size: 0000000000000AD000
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2119262208, virtual_start: 0, number_of_pages: 1, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 2145386496, virtual_start: 0, number_of_pages: 154, attribute: 15 }
 [INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 4294967296, virtual_start: 0, number_of_pages: 262144, attribute: 15 }
-[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369417728, virtual_start: 0, number_of_pages: 261971, attribute: 15 }
-[INFO] src/init.rs:82 : Total: 1037653 pages = 4053 MiB
+[INFO] src/init.rs:79 : EfiMemoryDescriptor { memory_type: CONVENTIONAL_MEMORY, physical_start: 5369434112, virtual_start: 0, number_of_pages: 261967, attribute: 15 }
+[INFO] src/init.rs:82 : Total: 1037649 pages = 4053 MiB
 [INFO] src/x86.rs:745: TSS64 created @ 0x17FF7FE80
 [INFO] src/x86.rs:818: Loading GDT @ 0x000000017FF7FE20
 [INFO] src/x86.rs:821: Loading TSS (selector = 0x18 )
@@ -31,47 +31,48 @@ image_size: 0000000000000AD000
 [INFO] src/pci.rs:166: (vendor: 0x1234, device: 0x1111)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x10D3)
 [INFO] src/pci.rs:166: (vendor: 0x1B36, device: 0x000D)
-[INFO] src/xhci.rs:98 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
-[INFO] src/xhci.rs:411: xhci: page_size = 4096
-[INFO] src/xhci.rs:413: xhci: original num_scratchpad_bufs = 0
-[INFO] src/xhci.rs:607: Starting xHC...
-[INFO] src/xhci.rs:609: xHC started running!
+[INFO] src/xhci.rs:99 : Xhci found at: /pci/bus/0x00/device/0x03/function/0x0)
+[INFO] src/xhci.rs:505: xhci: page_size = 4096
+[INFO] src/xhci.rs:507: xhci: original num_scratchpad_bufs = 0
+[INFO] src/xhci.rs:701: Starting xHC...
+[INFO] src/xhci.rs:703: xHC started running!
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2918)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2922)
 [INFO] src/pci.rs:166: (vendor: 0x8086, device: 0x2930)
 [INFO] src/executor.rs:171: Starting global executor loop
 [INFO] src/executor.rs:93 : Executor starts running...
-[INFO] src/xhci.rs:109: xhci: cap_regs.MaxSlots = 64
-[INFO] src/xhci.rs:113: xhci: op_regs.USBSTS = 0
-[INFO] src/xhci.rs:117: xhci: rt_regs.MFINDEX = 1419
-[INFO] src/xhci.rs:121: PORTSC values for port 1..9
-[INFO] src/xhci.rs:125:    1: 0x000202A0
-[INFO] src/xhci.rs:125:    2: 0x000202A0
-[INFO] src/xhci.rs:125:    3: 0x000202A0
-[INFO] src/xhci.rs:125:    4: 0x000202A0
-[INFO] src/xhci.rs:125:    5: 0x00020EE1
-[INFO] src/xhci.rs:125:    6: 0x000202A0
-[INFO] src/xhci.rs:125:    7: 0x000202A0
-[INFO] src/xhci.rs:125:    8: 0x000202A0
-[INFO] src/xhci.rs:142: xhci: port 5 is connected
-[INFO] src/xhci.rs:185: xhci: resetting port 5
-[INFO] src/xhci.rs:187: xhci: port 5 has been reset
-[INFO] src/xhci.rs:192: xhci: port 5 is enabled
-[INFO] src/main.rs:58 : 100 hpet.main_counter = 58.219ms
-[INFO] src/main.rs:65 : 200 hpet.main_counter = 63.768ms
+[INFO] src/xhci.rs:110: xhci: cap_regs.MaxSlots = 64
+[INFO] src/xhci.rs:114: xhci: op_regs.USBSTS = 0
+[INFO] src/xhci.rs:118: xhci: rt_regs.MFINDEX = 1612
+[INFO] src/xhci.rs:122: PORTSC values for port 1..9
+[INFO] src/xhci.rs:126:    1: 0x000202A0
+[INFO] src/xhci.rs:126:    2: 0x000202A0
+[INFO] src/xhci.rs:126:    3: 0x000202A0
+[INFO] src/xhci.rs:126:    4: 0x000202A0
+[INFO] src/xhci.rs:126:    5: 0x00020EE1
+[INFO] src/xhci.rs:126:    6: 0x000202A0
+[INFO] src/xhci.rs:126:    7: 0x000202A0
+[INFO] src/xhci.rs:126:    8: 0x000202A0
+[INFO] src/xhci.rs:143: xhci: port 5 is connected
+[INFO] src/xhci.rs:209: xhci: resetting port 5
+[INFO] src/xhci.rs:211: xhci: port 5 has been reset
+[INFO] src/xhci.rs:216: xhci: port 5 is enabled
+[INFO] src/main.rs:58 : 100 hpet.main_counter = 71.368ms
+[INFO] src/main.rs:65 : 200 hpet.main_counter = 77.633ms
 [INFO] src/main.rs:76 : Started to monitor serial port
-[INFO] src/xhci.rs:717: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
-[INFO] src/xhci.rs:144: slot 1 is assigned for port 5
-[INFO] src/xhci.rs:146: AdressDeviceCommand succeeded
-[INFO] src/xhci.rs:148: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 4, serial_idx: 11, num_of_config: 1 }
-[INFO] src/xhci.rs:151: xhci: device detected: vid:pid = 0x0627:0x0001
-[INFO] src/xhci.rs:178: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Keyboard")/Some("68284-0000:00:03.0-1")
-[INFO] src/executor.rs:101: Task completed: Task(src/xhci.rs:105):Ok(())
-[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.063479s
-[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.066938s
-[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.070282s
-[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.070312s
-[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.073614s
+[INFO] src/xhci.rs:829: unhandled event: GenericTrbEntry { data: Volatile { value: 83886080 }, option: Volatile { value: 16777216 }, control: Volatile { value: 34817 } }
+[INFO] src/xhci.rs:145: slot 1 is assigned for port 5
+[INFO] src/xhci.rs:147: AdressDeviceCommand succeeded
+[INFO] src/xhci.rs:150: Got a DeviceDescriptor: UsbDeviceDescriptor { desc_length: 18, desc_type: 1, version: 512, device_class: 0, device_subclass: 0, device_protocol: 0, max_packet_size: 64, vendor_id: 1575, product_id: 1, device_version: 0, manufacturer_idx: 1, product_idx: 4, serial_idx: 11, num_of_config: 1 }
+[INFO] src/xhci.rs:153: xhci: device detected: vid:pid = 0x0627:0x0001
+[INFO] src/xhci.rs:199: xhci: v/p/s = Some("QEMU")/Some("QEMU USB Keyboard")/Some("68284-0000:00:03.0-1")
+[INFO] src/xhci.rs:202: xhci: [Config(ConfigDescriptor { desc_length: 9, desc_type: 2, total_length: 34, num_of_interfaces: 1, config_value: 1, config_string_index: 8, attribute: 160, max_power: 50, _pinned: PhantomPinned }), Interface(InterfaceDescriptor { desc_length: 9, desc_type: 4, interface_number: 0, alt_setting: 0, num_of_endpoints: 1, interface_class: 3, interface_subclass: 1, interface_protocol: 1, interface_index: 0 }), Unknown { desc_len: 9, desc_type: 33 }, Endpoint(EndpointDescriptor { desc_length: 7, desc_type: 5, endpoint_address: 129, attributes: 3, max_packet_size: 8, interval: 7 })]
+[INFO] src/executor.rs:101: Task completed: Task(src/xhci.rs:106):Ok(())
+[INFO] src/main.rs:58 : 101 hpet.main_counter = 1.07736s
+[INFO] src/main.rs:58 : 102 hpet.main_counter = 2.08152s
+[INFO] src/main.rs:65 : 201 hpet.main_counter = 2.085622s
+[INFO] src/main.rs:58 : 103 hpet.main_counter = 3.085619s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:85):Ok(())
-[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.077021s
+[INFO] src/main.rs:65 : 202 hpet.main_counter = 4.094936s
+[INFO] src/main.rs:65 : 203 hpet.main_counter = 6.099091s
 [INFO] src/executor.rs:101: Task completed: Task(src/main.rs:86):Ok(())
