@@ -99,6 +99,7 @@ pub fn hexdump_bytes(bytes: &[u8]) {
     }
 }
 
-pub fn hexdump<T: Sized>(data: &T) {
+pub fn hexdump_struct<T: Sized>(data: &T) {
+    info!("hexdump_struct: {:?}", core::any::type_name::<T>());
     hexdump_bytes(unsafe { slice::from_raw_parts(data as *const T as *const u8, size_of::<T>()) });
 }
